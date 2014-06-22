@@ -1,0 +1,6 @@
+# bin / temp files
+*.py[cod]
+*.swp
+
+# project / environment 
+.venv
