@@ -1,4 +1,6 @@
+args==0.1.0
+argtools==0.1.2
 beautifulsoup4==4.3.2
-clime==0.2.6
+clint==0.3.7
 requests==2.2.1
 wsgiref==0.1.2
