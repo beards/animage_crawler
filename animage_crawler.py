@@ -59,9 +59,6 @@ class BlogPost(object):
     def __init__(self, content):
         self.content = content
         self.id = int(content.attrs['id'].split('-')[1])
-        self._date = None
-        self._image_link = None
-        self._image_link_type = None
 
     @property
     def link(self):
@@ -77,7 +74,7 @@ class BlogPost(object):
 
     @property
     def date(self):
-        if not self._date:
+        if not hasattr(self, '_date'):
             date_str = self.content.find('div', class_='date').get_text().strip()
             month, day, year = (int(x) for x in re.split('[^\d]+', date_str))
             self._date = datetime.date(year, month, day)
@@ -85,13 +82,13 @@ class BlogPost(object):
 
     @property
     def image_link(self):
-        if not self._image_link:
+        if not hasattr(self, '_image_link'):
             self._image_link, self._image_link_type = self.analyze_image_link()
         return self._image_link
 
     @property
     def image_link_type(self):
-        if not self._image_link_type:
+        if not hasattr(self, '_image_link_type'):
             self._image_link, self._image_link_type = self.analyze_image_link()
         return self._image_link_type
 
