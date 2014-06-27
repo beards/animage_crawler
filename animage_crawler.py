@@ -110,12 +110,18 @@ class BlogPost(object):
             link_type = 'HIGH_PREVIEW'
         return image_link, link_type
 
-    def save_image(self, output_path):
+    def fetch_image(self):
         r = requests.get(self.image_link, stream=True)
         if not r.ok:
             raise r.raise_for_status()
+        self.fetch_result = r
+        self._image_link = r.url  # update to the redirected url
+
+    def save_image(self, output_path):
+        if not hasattr(self, 'fetch_result'):
+            self.fetch_image()
         with open(output_path, 'wb') as f:
-            for chunk in r.iter_content(chunk_size=1024):
+            for chunk in self.fetch_result.iter_content(chunk_size=1024):
                 if chunk:  # filter out keep-alive new chunks
                     f.write(chunk)
             f.flush()
@@ -144,17 +150,26 @@ class Crawler(object):
                 raise
         self._pre_out_dir = path
 
+    def find_file_ext(self, link):
+        link = link.split('?')[0]  # trim the parameters
+        parts = link.split('/')[-1].split('.')
+        if len(parts) < 2:
+            return ''
+        return parts[-1]
+
     def format_output_path(self, post):
-        link = post.image_link
         dirname = '{dir}/{year:04d}_{month:02d}'.format(
             dir=self.output_dir,
             year=post.date.year,
             month=post.date.month,
             day=post.date.day,
         )
+        ext = self.find_file_ext(post.image_link) or 'jpg'
+            # I think it's should almost always right,
+            # so I decide to hardcode here but not fetch to see the redirected url
         filename = '{id}.{ext}'.format(
             id=post.id,
-            ext=link.split('.')[-1].lower()
+            ext=ext
         )
         return dirname, filename
 
