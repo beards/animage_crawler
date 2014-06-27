@@ -16,13 +16,15 @@ from clint.textui import puts_err, colored
 class BlogPage(object):
     base_url = 'http://animage.tumblr.com'
 
-    def __init__(self, url=None, tag=None, page=1):
+    def __init__(self, url=None, tag=None, page=1, post_id=None):
         self.tag = tag
         self.page = page
-        self.url = url or self.compose_url(tag, page)
+        self.url = url or self.compose_url(tag, page, post_id)
 
     @classmethod
-    def compose_url(klass, tag, page):
+    def compose_url(klass, tag, page, post_id=None):
+        if post_id is not None:
+            return '{0}/post/{1}'.format(klass.base_url, post_id)
         if tag is None:
             return '{0}/page/{1}'.format(klass.base_url, page)
         else:
@@ -236,6 +238,14 @@ class Crawler(object):
             if end_page and blogpage.page > end_page:
                 break
 
+    def get_by_post_ids(self, post_ids):
+        for pid in post_ids:
+            blogpage = BlogPage(post_id=pid)
+            try:
+                self.process_blogpage(blogpage, overwrite=True)
+            except self.Error as e:
+                self._puts_err('ERROR: ' + str(e))
+
 
 from argtools import command, argument
 
@@ -246,6 +256,7 @@ from argtools import command, argument
 @argument('-p', '--page', dest='pages', type=int, nargs='*')
 @argument('-s', '--start', type=int, help='get images from this page')
 @argument('-e', '--end', type=int, help='get images till this page, must be used with --start')
+@argument('--post_id', type=int, nargs='*', help='get a single post')
 @argument('-u', '--update', action='store_true', help='do not download again if the image is already got before')
 def main(args):
     if args.end and not args.start:
@@ -255,6 +266,8 @@ def main(args):
         puts_err(colored.red('output dir {0} does not exist, auto create it.'.format(args.output_dir)))
         os.makedirs(args.output_dir)
     crawler = Crawler(args.tag, args.output_dir)
+    if args.post_id:
+        crawler.get_by_post_ids(args.post_id)
     if args.start:
         crawler.get_range(args.start, args.end, args.update)
     if args.pages:
