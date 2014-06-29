@@ -280,6 +280,8 @@ def main(args):
     if not os.path.isdir(args.output_dir):
         puts_err(colored.red('output dir {0} does not exist, auto create it.'.format(args.output_dir)))
         os.makedirs(args.output_dir)
+
+    os.umask(002)
     crawler = Crawler(args.tag, args.output_dir)
     if args.post_id:
         crawler.get_by_post_ids(args.post_id)
