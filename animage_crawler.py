@@ -245,7 +245,7 @@ class Crawler(object):
             try:
                 anything_saved = self.process_blogpage(blogpage, overwrite=is_overwrite)
                 if update_only and not anything_saved:
-                    self._puts('update finished on page {}'.format(blogpage.page), stream=self.stream)
+                    self._puts('update finished on page {}'.format(blogpage.page))
                     return
             except self.Error as e:
                 self._puts_err('ERROR: ' + str(e))
